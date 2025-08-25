@@ -147,18 +147,34 @@
             transition: background 0.3s;
         }
 
-        .result-item:hover {
-            background: rgba(0, 255, 65, 0.1);
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
+        .domain-info {
+            flex: 1;
         }
 
         .domain-name {
             font-size: 1.4rem;
             color: #00ff41;
             font-weight: bold;
+        }
+
+        .domain-price {
+            font-size: 1rem;
+            color: #00ccff;
+            margin-top: 2px;
+        }
+
+        .status-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .result-item:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
         }
 
         .status {
@@ -215,7 +231,8 @@
     
     <div class="container">
         <div class="header">
-            <h1>DOMAIN SEARCH STATION</h1>
+            <h1>COMRADE CIRCUITS</h1>
+            <div class="subtitle">>>> DOMAIN SEARCH STATION <<<</div>
         </div>
 
         <div class="search-panel">
@@ -245,7 +262,7 @@
         </div>
 
         <div class="footer">
-            DOMAIN SEARCH STATION © 2025 | POWERED BY RETRO TECH
+            COMRADE CIRCUITS DOMAIN SEARCH © 2025
         </div>
     </div>
 
@@ -302,25 +319,48 @@
             resultsList.innerHTML = '';
             
             if (!data || !data.data || data.data.length === 0) {
-                resultsList.innerHTML = '<div class="result-item"><span class="domain-name">NO RESULTS FOUND</span></div>';
+                resultsList.innerHTML = '<div class="result-item"><div class="domain-info"><span class="domain-name">NO RESULTS FOUND</span></div></div>';
                 resultsPanel.style.display = 'block';
                 return;
             }
 
             data.data.forEach(item => {
-                // Handle the format: {"test.com":"Unavailable"}
-                const domain = Object.keys(item)[0];
-                const status = item[domain];
+                let domain, status, price;
+                
+                // Handle different response formats
+                if (typeof item === 'object') {
+                    if (item.domain && item.status) {
+                        // New format: {domain: "test.com", status: "Available", price: 15.99}
+                        domain = item.domain;
+                        status = item.status;
+                        price = item.price;
+                    } else {
+                        // Current format: {"test.com":"Unavailable"}
+                        domain = Object.keys(item)[0];
+                        status = item[domain];
+                    }
+                }
+                
                 const isAvailable = status === 'Available';
 
                 const resultItem = document.createElement('div');
                 resultItem.className = 'result-item';
                 
+                let priceHtml = '';
+                if (price && isAvailable) {
+                    priceHtml = `<div class="domain-price">${price}/year</div>`;
+                }
+                
                 resultItem.innerHTML = `
-                    <span class="domain-name">${domain}</span>
-                    <span class="status ${isAvailable ? 'available' : 'unavailable'}">
-                        ${status}
-                    </span>
+                    <div class="domain-info">
+                        <span class="domain-name">${domain}</span>
+                        ${priceHtml}
+                    </div>
+                    <div class="status-price">
+                        <span class="status ${isAvailable ? 'available' : 'unavailable'}">
+                            ${status}
+                        </span>
+                    </div>
                 `;
                 
                 resultsList.appendChild(resultItem);
