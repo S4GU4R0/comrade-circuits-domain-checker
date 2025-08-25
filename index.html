@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Domain Search Station</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-        
+
         body {
             margin: 0;
             padding: 0;
@@ -30,8 +31,13 @@
         }
 
         @keyframes glow {
-            from { text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41; }
-            to { text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41; }
+            from {
+                text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+            }
+
+            to {
+                text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41;
+            }
         }
 
         h1 {
@@ -52,7 +58,7 @@
             border-radius: 0;
             padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 
+            box-shadow:
                 0 0 20px rgba(0, 255, 65, 0.3),
                 inset 0 0 20px rgba(0, 255, 65, 0.1);
         }
@@ -115,7 +121,9 @@
         }
 
         @keyframes blink {
-            50% { opacity: 0; }
+            50% {
+                opacity: 0;
+            }
         }
 
         .results-panel {
@@ -147,18 +155,34 @@
             transition: background 0.3s;
         }
 
-        .result-item:hover {
-            background: rgba(0, 255, 65, 0.1);
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
+        .domain-info {
+            flex: 1;
         }
 
         .domain-name {
             font-size: 1.4rem;
             color: #00ff41;
             font-weight: bold;
+        }
+
+        .domain-price {
+            font-size: 1rem;
+            color: #00ccff;
+            margin-top: 2px;
+        }
+
+        .status-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .result-item:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
         }
 
         .status {
@@ -181,8 +205,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .footer {
@@ -210,130 +241,151 @@
         }
     </style>
 </head>
+
 <body>
     <div class="retro-border"></div>
-    
+
     <div class="container">
         <div class="header">
-            <h1>DOMAIN SEARCH STATION</h1>
+            <h1>COMRADE CIRCUITS</h1>
+            <div class="subtitle">>>> DOMAIN SEARCH STATION <<<< /div>
+            </div>
+
+            <div class="search-panel">
+                <div class="search-box">
+                    <input type="text" id="domainInput" class="search-input" placeholder="enter domain name..."
+                        autocomplete="off">
+                    <button id="searchBtn" class="search-btn">SEARCH</button>
+                </div>
+
+                <div id="loading" class="loading" style="display: none;">
+                    SCANNING DOMAIN DATABASE<span class="cursor"></span>
+                </div>
+            </div>
+
+            <div id="resultsPanel" class="results-panel" style="display: none;">
+                <div class="results-header">
+                    DOMAIN AVAILABILITY REPORT
+                </div>
+                <div id="resultsList" class="results-list">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+
+            <div class="footer">
+                COMRADE CIRCUITS DOMAIN SEARCH © 2025
+            </div>
         </div>
 
-        <div class="search-panel">
-            <div class="search-box">
-                <input 
-                    type="text" 
-                    id="domainInput" 
-                    class="search-input" 
-                    placeholder="enter domain name..."
-                    autocomplete="off"
-                >
-                <button id="searchBtn" class="search-btn">SEARCH</button>
-            </div>
-            
-            <div id="loading" class="loading" style="display: none;">
-                SCANNING DOMAIN DATABASE<span class="cursor"></span>
-            </div>
-        </div>
+        <script>
+            // Your n8n webhook URL
+            const N8N_WEBHOOK_URL = 'https://api.comradecircuits.com/webhook/domain';
 
-        <div id="resultsPanel" class="results-panel" style="display: none;">
-            <div class="results-header">
-                DOMAIN AVAILABILITY REPORT
-            </div>
-            <div id="resultsList" class="results-list">
-                <!-- Results will be inserted here -->
-            </div>
-        </div>
+            const domainInput = document.getElementById('domainInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const loading = document.getElementById('loading');
+            const resultsPanel = document.getElementById('resultsPanel');
+            const resultsList = document.getElementById('resultsList');
 
-        <div class="footer">
-            DOMAIN SEARCH STATION © 2025 | POWERED BY RETRO TECH
-        </div>
-    </div>
-
-    <script>
-        // Your n8n webhook URL
-        const N8N_WEBHOOK_URL = 'https://api.comradecircuits.com/webhook/domain';
-        
-        const domainInput = document.getElementById('domainInput');
-        const searchBtn = document.getElementById('searchBtn');
-        const loading = document.getElementById('loading');
-        const resultsPanel = document.getElementById('resultsPanel');
-        const resultsList = document.getElementById('resultsList');
-
-        searchBtn.addEventListener('click', searchDomains);
-        domainInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchDomains();
-            }
-        });
-
-        async function searchDomains() {
-            const domain = domainInput.value.trim().toLowerCase();
-            
-            if (!domain) {
-                alert('> ERROR: PLEASE ENTER DOMAIN NAME');
-                return;
-            }
-
-            // Show loading
-            loading.style.display = 'block';
-            resultsPanel.style.display = 'none';
-            searchBtn.disabled = true;
-            searchBtn.textContent = 'SEARCHING...';
-
-            try {
-                const response = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(domain)}`, {
-                    method: 'GET'
-                });
-
-                const data = await response.json();
-                displayResults(data);
-
-            } catch (error) {
-                console.error('Search error:', error);
-                alert('> ERROR: NETWORK CONNECTION FAILED');
-            } finally {
-                loading.style.display = 'none';
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'SEARCH';
-            }
-        }
-
-        function displayResults(data) {
-            resultsList.innerHTML = '';
-            
-            if (!data || !data.data || data.data.length === 0) {
-                resultsList.innerHTML = '<div class="result-item"><span class="domain-name">NO RESULTS FOUND</span></div>';
-                resultsPanel.style.display = 'block';
-                return;
-            }
-
-            data.data.forEach(item => {
-                // Handle the format: {"test.com":"Unavailable"}
-                const domain = Object.keys(item)[0];
-                const status = item[domain];
-                const isAvailable = status === 'Available';
-
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                
-                resultItem.innerHTML = `
-                    <span class="domain-name">${domain}</span>
-                    <span class="status ${isAvailable ? 'available' : 'unavailable'}">
-                        ${status}
-                    </span>
-                `;
-                
-                resultsList.appendChild(resultItem);
+            searchBtn.addEventListener('click', searchDomains);
+            domainInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    searchDomains();
+                }
             });
 
-            resultsPanel.style.display = 'block';
-        }
+            async function searchDomains() {
+                const domain = domainInput.value.trim().toLowerCase();
 
-        // Add some retro startup sound effect (optional)
-        window.addEventListener('load', function() {
-            // You could add a startup sound here if you want
-            console.log('> DOMAIN SEARCH STATION ONLINE');
-        });
-    </script>
+                if (!domain) {
+                    alert('> ERROR: PLEASE ENTER DOMAIN NAME');
+                    return;
+                }
+
+                // Show loading
+                loading.style.display = 'block';
+                resultsPanel.style.display = 'none';
+                searchBtn.disabled = true;
+                searchBtn.textContent = 'SEARCHING...';
+
+                try {
+                    const response = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(domain)}`, {
+                        method: 'GET'
+                    });
+
+                    const data = await response.json();
+                    displayResults(data);
+
+                } catch (error) {
+                    console.error('Search error:', error);
+                    alert('> ERROR: NETWORK CONNECTION FAILED');
+                } finally {
+                    loading.style.display = 'none';
+                    searchBtn.disabled = false;
+                    searchBtn.textContent = 'SEARCH';
+                }
+            }
+
+            function displayResults(data) {
+                resultsList.innerHTML = '';
+
+                if (!data || !data.data || data.data.length === 0) {
+                    resultsList.innerHTML = '<div class="result-item"><div class="domain-info"><span class="domain-name">NO RESULTS FOUND</span></div></div>';
+                    resultsPanel.style.display = 'block';
+                    return;
+                }
+
+                data.data.forEach(item => {
+                    let domain, status, price;
+
+                    // Handle different response formats
+                    if (typeof item === 'object') {
+                        if (item.domain && item.status) {
+                            // New format: {domain: "test.com", status: "Available", price: 15.99}
+                            domain = item.domain;
+                            status = item.status;
+                            price = item.price;
+                        } else {
+                            // Current format: {"test.com":"Unavailable"}
+                            domain = Object.keys(item)[0];
+                            status = item[domain];
+                        }
+                    }
+
+                    const isAvailable = status === 'Available';
+
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+
+                    let priceHtml = '';
+                    if (price && isAvailable) {
+                        priceHtml = `<div class="domain-price">${price}/year</div>`;
+                    }
+
+                    resultItem.innerHTML = `
+                    <div class="domain-info">
+                        <span class="domain-name">${domain}</span>
+                        ${priceHtml}
+                    </div>
+                    <div class="status-price">
+                        <span class="status ${isAvailable ? 'available' : 'unavailable'}">
+                            ${status}
+                        </span>
+                    </div>
+                `;
+
+                    resultsList.appendChild(resultItem);
+                });
+
+                resultsPanel.style.display = 'block';
+            }
+
+            // Add some retro startup sound effect (optional)
+            window.addEventListener('load', function () {
+                // You could add a startup sound here if you want
+                console.log('> DOMAIN SEARCH STATION ONLINE');
+            });
+        </script>
 </body>
+
 </html>
