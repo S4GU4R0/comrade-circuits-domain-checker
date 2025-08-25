@@ -1,391 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domain Search Station</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(45deg, #000428 0%, #004e92 100%);
-            font-family: 'VT323', monospace;
-            color: #00ff41;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
-            }
-
-            to {
-                text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41;
-            }
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin: 0;
-            letter-spacing: 3px;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            color: #00ccff;
-        }
-
-        .search-panel {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff41;
-            border-radius: 0;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow:
-                0 0 20px rgba(0, 255, 65, 0.3),
-                inset 0 0 20px rgba(0, 255, 65, 0.1);
-        }
-
-        .search-box {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            flex: 1;
-            background: #000;
-            border: 2px solid #00ccff;
-            color: #00ff41;
-            font-family: 'VT323', monospace;
-            font-size: 1.5rem;
-            padding: 15px;
-            text-transform: lowercase;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #00ff41;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-        }
-
-        .search-btn {
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
-            border: none;
-            color: #000;
-            font-family: 'VT323', monospace;
-            font-size: 1.3rem;
-            font-weight: bold;
-            padding: 15px 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .search-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(247, 147, 30, 0.4);
-        }
-
-        .search-btn:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .loading {
-            text-align: center;
-            font-size: 1.5rem;
-            color: #00ccff;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        .results-panel {
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00ccff;
-            margin-top: 20px;
-        }
-
-        .results-header {
-            background: #00ccff;
-            color: #000;
-            padding: 15px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .results-list {
-            padding: 0;
-        }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #333;
-            transition: background 0.3s;
-        }
-
-        .domain-info {
-            flex: 1;
-        }
-
-        .domain-name {
-            font-size: 1.4rem;
-            color: #00ff41;
-            font-weight: bold;
-        }
-
-        .domain-price {
-            font-size: 1rem;
-            color: #00ccff;
-            margin-top: 2px;
-        }
-
-        .status-price {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        .result-item:hover {
-            background: rgba(0, 255, 65, 0.1);
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-
-        .status {
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 8px 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .available {
-            background: #00ff41;
-            color: #000;
-            animation: pulse 2s infinite;
-        }
-
-        .unavailable {
-            background: #ff3333;
-            color: #fff;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            color: #666;
-            font-size: 1rem;
-        }
-
-        .retro-border {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            border: 3px solid #00ff41;
-            z-index: 1000;
-        }
-
-        /* Terminal cursor effect */
-        .cursor::after {
-            content: '█';
-            animation: blink 1s infinite;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="retro-border"></div>
-
-    <div class="container">
-        <div class="header">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Domain Search Station</title>
+      <style>
+         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+         body {
+         margin: 0;
+         padding: 0;
+         background: linear-gradient(45deg, #000428 0%, #004e92 100%);
+         font-family: 'VT323', monospace;
+         color: #00ff41;
+         min-height: 100vh;
+         overflow-x: hidden;
+         }
+         .container {
+         max-width: 800px;
+         margin: 0 auto;
+         padding: 20px;
+         }
+         .header {
+         text-align: center;
+         margin-bottom: 40px;
+         animation: glow 2s ease-in-out infinite alternate;
+         }
+         @keyframes glow {
+         from { text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41; }
+         to { text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41; }
+         }
+         h1 {
+         font-size: 3rem;
+         margin: 0;
+         letter-spacing: 3px;
+         }
+         .subtitle {
+         font-size: 1.2rem;
+         margin-top: 10px;
+         color: #00ccff;
+         }
+         .search-panel {
+         background: rgba(0, 0, 0, 0.8);
+         border: 2px solid #00ff41;
+         border-radius: 0;
+         padding: 30px;
+         margin-bottom: 30px;
+         box-shadow: 
+         0 0 20px rgba(0, 255, 65, 0.3),
+         inset 0 0 20px rgba(0, 255, 65, 0.1);
+         }
+         .search-box {
+         display: flex;
+         gap: 15px;
+         margin-bottom: 20px;
+         }
+         .search-input {
+         flex: 1;
+         background: #000;
+         border: 2px solid #00ccff;
+         color: #00ff41;
+         font-family: 'VT323', monospace;
+         font-size: 1.5rem;
+         padding: 15px;
+         text-transform: lowercase;
+         }
+         .search-input:focus {
+         outline: none;
+         border-color: #00ff41;
+         box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+         }
+         .search-btn {
+         background: linear-gradient(45deg, #ff6b35, #f7931e);
+         border: none;
+         color: #000;
+         font-family: 'VT323', monospace;
+         font-size: 1.3rem;
+         font-weight: bold;
+         padding: 15px 30px;
+         cursor: pointer;
+         transition: all 0.3s;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         }
+         .search-btn:hover {
+         transform: scale(1.05);
+         box-shadow: 0 5px 15px rgba(247, 147, 30, 0.4);
+         }
+         .search-btn:disabled {
+         background: #333;
+         color: #666;
+         cursor: not-allowed;
+         transform: none;
+         box-shadow: none;
+         }
+         .loading {
+         text-align: center;
+         font-size: 1.5rem;
+         color: #00ccff;
+         animation: blink 1s infinite;
+         }
+         @keyframes blink {
+         50% { opacity: 0; }
+         }
+         .results-panel {
+         background: rgba(0, 0, 0, 0.9);
+         border: 2px solid #00ccff;
+         margin-top: 20px;
+         }
+         .results-header {
+         background: #00ccff;
+         color: #000;
+         padding: 15px;
+         font-size: 1.4rem;
+         font-weight: bold;
+         text-transform: uppercase;
+         letter-spacing: 2px;
+         }
+         .results-list {
+         padding: 0;
+         }
+         .result-item {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         padding: 15px 20px;
+         border-bottom: 1px solid #333;
+         transition: background 0.3s;
+         }
+         .domain-info {
+         flex: 1;
+         }
+         .domain-name {
+         font-size: 1.4rem;
+         color: #00ff41;
+         font-weight: bold;
+         }
+         .domain-price {
+         font-size: 1rem;
+         color: #00ccff;
+         margin-top: 2px;
+         }
+         .status-price {
+         display: flex;
+         flex-direction: column;
+         align-items: flex-end;
+         }
+         .result-item:hover {
+         background: rgba(0, 255, 65, 0.1);
+         }
+         .result-item:last-child {
+         border-bottom: none;
+         }
+         .status {
+         font-size: 1.2rem;
+         font-weight: bold;
+         padding: 8px 16px;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         }
+         .available {
+         background: #00ff41;
+         color: #000;
+         animation: pulse 2s infinite;
+         }
+         .unavailable {
+         background: #ff3333;
+         color: #fff;
+         }
+         @keyframes pulse {
+         0%, 100% { transform: scale(1); }
+         50% { transform: scale(1.05); }
+         }
+         .footer {
+         text-align: center;
+         margin-top: 50px;
+         color: #666;
+         font-size: 1rem;
+         }
+         .retro-border {
+         position: fixed;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         pointer-events: none;
+         border: 3px solid #00ff41;
+         z-index: 1000;
+         }
+         /* Terminal cursor effect */
+         .cursor::after {
+         content: '█';
+         animation: blink 1s infinite;
+         }
+      </style>
+   </head>
+   <body>
+      <div class="retro-border"></div>
+      <div class="container">
+         <div class="header">
             <h1>COMRADE CIRCUITS</h1>
-            <div class="subtitle">>>> DOMAIN SEARCH STATION <<<< /div>
+            <div class="subtitle">>>> DOMAIN SEARCH STATION <<<</div>
+         </div>
+         <div class="search-panel">
+            <div class="search-box">
+               <input 
+                  type="text" 
+                  id="domainInput" 
+                  class="search-input" 
+                  placeholder="enter domain name..."
+                  autocomplete="off"
+                  >
+               <button id="searchBtn" class="search-btn">SEARCH</button>
             </div>
-
-            <div class="search-panel">
-                <div class="search-box">
-                    <input type="text" id="domainInput" class="search-input" placeholder="enter domain name..."
-                        autocomplete="off">
-                    <button id="searchBtn" class="search-btn">SEARCH</button>
-                </div>
-
-                <div id="loading" class="loading" style="display: none;">
-                    SCANNING DOMAIN DATABASE<span class="cursor"></span>
-                </div>
+            <div id="loading" class="loading" style="display: none;">
+               SCANNING DOMAIN DATABASE<span class="cursor"></span>
             </div>
-
-            <div id="resultsPanel" class="results-panel" style="display: none;">
-                <div class="results-header">
-                    DOMAIN AVAILABILITY REPORT
-                </div>
-                <div id="resultsList" class="results-list">
-                    <!-- Results will be inserted here -->
-                </div>
+         </div>
+         <div id="resultsPanel" class="results-panel" style="display: none;">
+            <div class="results-header">
+               DOMAIN AVAILABILITY REPORT
             </div>
-
-            <div class="footer">
-                COMRADE CIRCUITS DOMAIN SEARCH © 2025
+            <div id="resultsList" class="results-list">
+               <!-- Results will be inserted here -->
             </div>
-        </div>
-
-        <script>
-            // Your n8n webhook URL
-            const N8N_WEBHOOK_URL = 'https://api.comradecircuits.com/webhook/domain';
-
-            const domainInput = document.getElementById('domainInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const loading = document.getElementById('loading');
-            const resultsPanel = document.getElementById('resultsPanel');
-            const resultsList = document.getElementById('resultsList');
-
-            searchBtn.addEventListener('click', searchDomains);
-            domainInput.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    searchDomains();
-                }
-            });
-
-            async function searchDomains() {
-                const domain = domainInput.value.trim().toLowerCase();
-
-                if (!domain) {
-                    alert('> ERROR: PLEASE ENTER DOMAIN NAME');
-                    return;
-                }
-
-                // Show loading
-                loading.style.display = 'block';
-                resultsPanel.style.display = 'none';
-                searchBtn.disabled = true;
-                searchBtn.textContent = 'SEARCHING...';
-
-                try {
-                    const response = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(domain)}`, {
-                        method: 'GET'
-                    });
-
-                    const data = await response.json();
-                    displayResults(data);
-
-                } catch (error) {
-                    console.error('Search error:', error);
-                    alert('> ERROR: NETWORK CONNECTION FAILED');
-                } finally {
-                    loading.style.display = 'none';
-                    searchBtn.disabled = false;
-                    searchBtn.textContent = 'SEARCH';
-                }
-            }
-
-            function displayResults(data) {
-                resultsList.innerHTML = '';
-
-                if (!data || !data.data || data.data.length === 0) {
-                    resultsList.innerHTML = '<div class="result-item"><div class="domain-info"><span class="domain-name">NO RESULTS FOUND</span></div></div>';
-                    resultsPanel.style.display = 'block';
-                    return;
-                }
-
-                data.data.forEach(item => {
-                    let domain, status, price;
-
-                    // Handle different response formats
-                    if (typeof item === 'object') {
-                        if (item.domain && item.status) {
-                            // New format: {domain: "test.com", status: "Available", price: 15.99}
-                            domain = item.domain;
-                            status = item.status;
-                            price = item.price;
-                        } else {
-                            // Current format: {"test.com":"Unavailable"}
-                            domain = Object.keys(item)[0];
-                            status = item[domain];
-                        }
-                    }
-
-                    const isAvailable = status === 'Available';
-
-                    const resultItem = document.createElement('div');
-                    resultItem.className = 'result-item';
-
-                    let priceHtml = '';
-                    if (price && isAvailable) {
-                        priceHtml = `<div class="domain-price">${price}/year</div>`;
-                    }
-
-                    resultItem.innerHTML = `
-                    <div class="domain-info">
-                        <span class="domain-name">${domain}</span>
-                        ${priceHtml}
-                    </div>
-                    <div class="status-price">
-                        <span class="status ${isAvailable ? 'available' : 'unavailable'}">
-                            ${status}
-                        </span>
-                    </div>
-                `;
-
-                    resultsList.appendChild(resultItem);
-                });
-
-                resultsPanel.style.display = 'block';
-            }
-
-            // Add some retro startup sound effect (optional)
-            window.addEventListener('load', function () {
-                // You could add a startup sound here if you want
-                console.log('> DOMAIN SEARCH STATION ONLINE');
-            });
-        </script>
-</body>
-
+         </div>
+         <div class="footer">
+            COMRADE CIRCUITS DOMAIN SEARCH © 2025
+         </div>
+      </div>
+      <script>
+         // Your n8n webhook URL
+         const N8N_WEBHOOK_URL = 'https://api.comradecircuits.com/webhook/domain';
+         
+         const domainInput = document.getElementById('domainInput');
+         const searchBtn = document.getElementById('searchBtn');
+         const loading = document.getElementById('loading');
+         const resultsPanel = document.getElementById('resultsPanel');
+         const resultsList = document.getElementById('resultsList');
+         
+         searchBtn.addEventListener('click', searchDomains);
+         domainInput.addEventListener('keypress', function(e) {
+             if (e.key === 'Enter') {
+                 searchDomains();
+             }
+         });
+         
+         async function searchDomains() {
+             const domain = domainInput.value.trim().toLowerCase();
+             
+             if (!domain) {
+                 alert('> ERROR: PLEASE ENTER DOMAIN NAME');
+                 return;
+             }
+         
+             // Show loading
+             loading.style.display = 'block';
+             resultsPanel.style.display = 'none';
+             searchBtn.disabled = true;
+             searchBtn.textContent = 'SEARCHING...';
+         
+             try {
+                 const response = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(domain)}`, {
+                     method: 'GET'
+                 });
+         
+                 const data = await response.json();
+                 displayResults(data);
+         
+             } catch (error) {
+                 console.error('Search error:', error);
+                 alert('> ERROR: NETWORK CONNECTION FAILED');
+             } finally {
+                 loading.style.display = 'none';
+                 searchBtn.disabled = false;
+                 searchBtn.textContent = 'SEARCH';
+             }
+         }
+         
+         function displayResults(data) {
+             resultsList.innerHTML = '';
+             
+             if (!data || !data.data || data.data.length === 0) {
+                 resultsList.innerHTML = '<div class="result-item"><div class="domain-info"><span class="domain-name">NO RESULTS FOUND</span></div></div>';
+                 resultsPanel.style.display = 'block';
+                 return;
+             }
+         
+             data.data.forEach(item => {
+                 let domain, status, price;
+                 
+                 // Handle different response formats
+                 if (typeof item === 'object') {
+                     if (item.domain && item.status) {
+                         // New format: {domain: "test.com", status: "Available", price: 15.99}
+                         domain = item.domain;
+                         status = item.status;
+                         price = item.price;
+                     } else {
+                         // Current format: {"test.com":"Unavailable"}
+                         domain = Object.keys(item)[0];
+                         status = item[domain];
+                     }
+                 }
+                 
+                 const isAvailable = status === 'Available';
+         
+                 const resultItem = document.createElement('div');
+                 resultItem.className = 'result-item';
+                 
+                 let priceHtml = '';
+                 if (price && isAvailable) {
+                     priceHtml = `<div class="domain-price">${price}/year</div>`;
+                 }
+                 
+                 resultItem.innerHTML = `
+                     <div class="domain-info">
+                         <span class="domain-name">${domain}</span>
+                         ${priceHtml}
+                     </div>
+                     <div class="status-price">
+                         <span class="status ${isAvailable ? 'available' : 'unavailable'}">
+                             ${status}
+                         </span>
+                     </div>
+                 `;
+                 
+                 resultsList.appendChild(resultItem);
+             });
+         
+             resultsPanel.style.display = 'block';
+         }
+         
+         // Add some retro startup sound effect (optional)
+         window.addEventListener('load', function() {
+             // You could add a startup sound here if you want
+             console.log('> DOMAIN SEARCH STATION ONLINE');
+         });
+      </script>
+   </body>
 </html>
